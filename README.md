@@ -7,7 +7,23 @@ using HTML, JavaScript and Chart.js — no backend, no framework.
 
 [Open Dashboard](https://alurivijaysagar.github.io/google-ads-performance-dashboard)
 
-> Upload your Google Ads Excel export to load the dashboard with real data.
+> A sample dataset is included — the dashboard loads automatically with demo data.
+
+## Web Dashboard Preview
+
+![Overview](Screenshot%202026-02-23%20122143.png)
+![Campaign Changes](Screenshot%202026-02-23%20122151.png)
+![Time Patterns Heatmap](Screenshot%202026-02-23%20122204.png)
+
+## Tableau Dashboards
+
+Built complementary Tableau dashboards for deeper visual analysis.
+
+![Tableau Insights](INSIGHTS-1.png)
+![Tableau Dashboard](image.png)
+
+> Tableau workbook files (`.twbx`) are included in this repository.  
+> To open them, download [Tableau Public Desktop](https://public.tableau.com/en-us/s/download) (free).
 
 ## What This Dashboard Does
 
@@ -38,13 +54,11 @@ Analyses 90 days of real Google Ads campaign data across 5 analytical views:
 
 ## How to Use
 
-1. Open the live dashboard link above
-2. Click "Choose File" in the top right
-3. Upload your Google Ads Excel export
-4. All charts and KPIs populate automatically
+1. Open the live dashboard link above — sample data loads automatically
+2. Or click "Choose File" to upload your own Google Ads Excel export
 
 ## Author
 
-A.V.M. Vijay Sagar
-B.Tech CSE — KL University Hyderabad
+A.V.M. Vijay Sagar  
+B.Tech CSE — KL University Hyderabad  
 [LinkedIn](https://www.linkedin.com/in/aluri-vijay-sagar-75a5342b8/)
