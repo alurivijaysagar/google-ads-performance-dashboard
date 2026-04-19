@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Google Ads Performance Dashboard (Excel Powered)</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root { --bg:#fafafa; --card:#fff; --border:#e6e6e6; --text:#111; --muted:#666; }
+    body { font-family: Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+
+    header { padding: 14px 18px; background:#111; color:#fff; display:flex; align-items:center; justify-content:space-between; gap:14px; }
+    header .title { font-size:18px; font-weight:700; }
+    header .sub { font-size:12px; opacity:.85; }
+    header .right { display:flex; gap:10px; align-items:center; }
+    header input[type="file"] { color:#fff; font-size:12px; }
+
+    .wrap { max-width: 1250px; margin: 0 auto; padding: 16px; }
+    .nav { display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 12px; }
+    .nav button {
+      border:1px solid var(--border); background:var(--card); padding:8px 10px; border-radius:10px;
+      cursor:pointer; font-size:13px;
+    }
+    .nav button.active { background:#111; color:#fff; border-color:#111; }
+
+    .filters { display:flex; gap:12px; flex-wrap:wrap; margin: 10px 0 14px; }
+    label { font-size: 12px; color: #333; }
+    select { padding: 6px 8px; border:1px solid var(--border); border-radius:10px; background:#fff; }
+
+    .kpis { display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+    .kpi { background:var(--card); border:1px solid var(--border); border-radius:12px; padding: 12px; }
+    .kpi .name { font-size:12px; color:var(--muted); margin-bottom:6px; }
+    .kpi .value { font-size:18px; font-weight:700; }
+
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom:14px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding: 12px; }
+    .card h3 { margin:0 0 10px; font-size:15px; display:flex; align-items:center; gap:8px; }
+    .pill { font-size:11px; background:#f2f2f2; border:1px solid var(--border); padding:2px 8px; border-radius:999px; color:#333; }
+
+    .small { font-size:13px; line-height:1.45; color:#222; }
+    .muted { color:var(--muted); }
+
+    table { width:100%; border-collapse: collapse; font-size:13px; }
+    th, td { border-bottom:1px solid var(--border); padding:8px 6px; text-align:left; vertical-align:top; }
+    th { font-size:12px; color:#333; background:#fcfcfc; }
+    .tableWrap { overflow:auto; max-height: 420px; border:1px solid var(--border); border-radius:12px; }
+
+    .heatWrap { overflow:auto; border:1px solid var(--border); border-radius:12px; }
+    .heat { border-collapse: collapse; font-size:12px; }
+    .heat th, .heat td { border:1px solid var(--border); padding:6px; text-align:center; min-width:44px; }
+    .heat th { position:sticky; top:0; background:#fff; z-index:1; }
+    .heat .rowHead { position:sticky; left:0; background:#fff; z-index:2; font-weight:700; }
+
+    .section { display:none; }
+    .section.active { display:block; }
+
+    @media (max-width: 900px) {
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+      .grid2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div>
+    <div class="title">Google Ads Performance Intelligence Dashboard</div>
+    <div class="sub">Excel-powered website (no backend)</div>
+  </div>
+
+  <div class="right">
+    <div class="sub">Load Excel:</div>
+    <input id="fileInput" type="file" accept=".xlsx" />
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="nav">
+    <button class="tabBtn active" data-tab="overview">Overview</button>
+    <button class="tabBtn" data-tab="campaigns">Campaign Changes</button>
+    <button class="tabBtn" data-tab="search">Search & Keywords</button>
+    <button class="tabBtn" data-tab="opt">Optimization</button>
+    <button class="tabBtn" data-tab="time">Time Patterns</button>
+  </div>
+
+  <div class="filters">
+    <div>
+      <label for="campaignSelect">Campaign</label><br/>
+      <select id="campaignSelect"></select>
+    </div>
+    <div>
+      <label for="networkSelect">Network</label><br/>
+      <select id="networkSelect"></select>
+    </div>
+    <div>
+      <label for="deviceSelect">Device</label><br/>
+      <select id="deviceSelect"></select>
+    </div>
+    <div class="muted" style="align-self:end; font-size:12px;">
+      Note: Some charts are overall-only unless campaign-level breakdown exists in Excel.
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="name">Total Clicks</div><div class="value" id="kpiClicks">-</div></div>
+    <div class="kpi"><div class="name">Total Impressions</div><div class="value" id="kpiImpr">-</div></div>
+    <div class="kpi"><div class="name">Avg CTR</div><div class="value" id="kpiCtr">-</div></div>
+    <div class="kpi"><div class="name">Avg CPC</div><div class="value" id="kpiCpc">-</div></div>
+  </div>
+
+  <section id="overview" class="section active">
+    <div class="grid2">
+      <div class="card">
+        <h3>Impressions Trend <span class="pill">Overall</span></h3>
+        <canvas id="impressionsLine"></canvas>
+      </div>
+      <div class="card">
+        <h3>Clicks Trend <span class="pill">Overall</span></h3>
+        <canvas id="clicksLine"></canvas>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Network Performance (Clicks) <span class="pill">Overall</span></h3>
+        <canvas id="networkBar"></canvas>
+      </div>
+      <div class="card">
+        <h3>Device Performance (Clicks) <span class="pill">Overall</span></h3>
+        <canvas id="deviceBar"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Insights</h3>
+      <div class="small" id="insightsBox"></div>
+    </div>
+
+    <div class="card">
+      <h3>Limitations</h3>
+      <div class="small" id="limitationsBox"></div>
+    </div>
+  </section>
+
+  <section id="campaigns" class="section">
+    <div class="card">
+      <h3>Biggest Changes (Campaign-level)</h3>
+      <div class="muted small" style="margin-bottom:8px;">
+        Uses “Biggest_changes…” sheet (Cost/Clicks vs comparison period).
+      </div>
+      <div class="tableWrap">
+        <table id="campaignTable"></table>
+      </div>
+    </div>
+  </section>
+
+  <section id="search" class="section">
+    <div class="grid2">
+      <div class="card">
+        <h3>Top Keywords by Clicks <span class="pill">Word</span></h3>
+        <canvas id="keywordBar"></canvas>
+      </div>
+      <div class="card">
+        <h3>Top Search Terms by Clicks <span class="pill">Search</span></h3>
+        <canvas id="searchBar"></canvas>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Keyword Table (Word)</h3>
+        <div class="tableWrap"><table id="keywordTable"></table></div>
+      </div>
+      <div class="card">
+        <h3>Search Terms Table</h3>
+        <div class="tableWrap"><table id="searchTable"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="opt" class="section">
+    <div class="card">
+      <h3>Optimization Score by Campaign</h3>
+      <canvas id="optScoreBar"></canvas>
+    </div>
+  </section>
+
+  <section id="time" class="section">
+    <div class="grid2">
+      <div class="card">
+        <h3>Impressions by Day of Week</h3>
+        <canvas id="dayBar"></canvas>
+      </div>
+      <div class="card">
+        <h3>Impressions by Hour of Day</h3>
+        <canvas id="hourBar"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Day × Hour Heatmap (Impressions)</h3>
+      <div class="muted small" style="margin-bottom:8px;">
+        Uses “Day_&_Hour(by-each-hour)” sheet.
+      </div>
+      <div class="heatWrap" id="heatmapBox"></div>
+    </div>
+  </section>
+</div>
+
+<!-- SheetJS -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
